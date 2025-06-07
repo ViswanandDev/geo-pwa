@@ -143,8 +143,15 @@
       <label for="checkin-location">Check-In Location</label>
       <textarea id="checkin-location" name="checkinLocation" rows="2" readonly></textarea>
 
+      <label for="checkin-datetime">Check-In Date & Time</label>
+<textarea id="checkin-datetime" name="checkinDatetime" readonly /></textarea>
+
+
       <label for="checkout-location">Check-Out Location</label>
       <textarea id="checkout-location" name="checkoutLocation" rows="2" readonly></textarea>
+
+      <label for="checkout-datetime">Check-Out Date & Time</label>
+<textarea id="checkout-datetime" name="checkoutDatetime" readonly /></textarea>
 
       <input type="submit" value="Submit" />
     </form>
@@ -174,6 +181,8 @@
     function success(position, type) {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
+      const now = new Date();
+      const timestamp = now.toLocaleString();
 
       output.innerHTML = `<strong>${type.toUpperCase()}</strong><br>Latitude: ${lat}<br>Longitude: ${lon}`;
 
@@ -185,8 +194,10 @@
 
           if (type === 'checkin') {
             document.getElementById('checkin-location').value = address;
+            document.getElementById('checkin-datetime').value = timestamp;
           } else if (type === 'checkout') {
             document.getElementById('checkout-location').value = address;
+            document.getElementById('checkout-datetime').value = timestamp;
           }
 
           sendToServer(lat, lon, address, type);
