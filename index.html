@@ -73,8 +73,19 @@
 </head>
 <body>
 
-  <h1>Geolocation Check-In / Check-Out</h1>
-
+  <h1>Site Visit </h1
+<form action="/action_page.php">
+  <!-- Email Field -->
+    <label for="email">Client Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+    <label for="email">Employee Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+    <!-- Phone Field -->
+    <label for="phone">Phone Number:</label><br>
+    <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
+    <small>Format: 10 digits only</small><br><br>
+  <input type="submit" value="Submit">
+</form> 
   <div class="buttons">
     <button onclick="getLocation('checkin')">Check In</button>
     <button onclick="getLocation('checkout')">Check Out</button>
