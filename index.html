@@ -1,97 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#007bff">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Geolocation Check-In/Out</title>
+  <meta name="theme-color" content="#007bff" />
+  <title>Site Visit | Check-In/Out</title>
+  <link rel="manifest" href="manifest.json" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      background: #e6ecf2;
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      max-width: 500px;
+      width: 100%;
+      margin: 30px 15px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     h1 {
-      color: #333;
       text-align: center;
+      color: #007bff;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
     }
 
     .buttons {
       display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      margin: 20px 0;
+      justify-content: space-between;
+      margin-top: 20px;
     }
 
-    button {
-      padding: 12px 24px;
+    .buttons button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px 0;
       background-color: #007bff;
       border: none;
       color: white;
       font-size: 16px;
-      border-radius: 5px;
+      font-weight: bold;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s;
-      min-width: 120px;
+      transition: background-color 0.3s ease;
     }
 
-    button:hover {
+    .buttons button:hover {
       background-color: #0056b3;
     }
 
     #demo {
-      width: 100%;
-      max-width: 500px;
-      background-color: #fff;
+      margin-top: 20px;
       padding: 15px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      word-wrap: break-word;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      word-break: break-word;
+      font-size: 15px;
+      color: #333;
     }
 
-    @media (max-width: 600px) {
-      body {
-        padding: 10px;
+    @media (max-width: 500px) {
+      .buttons {
+        flex-direction: column;
+        gap: 10px;
       }
 
-      button {
-        font-size: 14px;
-        padding: 10px 16px;
-      }
-
-      #demo {
-        font-size: 14px;
+      .buttons button {
+        margin: 0;
       }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Site Visit</h1>
 
-  <h1>Site Visit </h1
-<form action="/action_page.php">
-  <!-- Email Field -->
-    <label for="email">Client Email:</label><br>
-    <input type="email" id="email" name="email" required><br><br>
-    <label for="email">Employee Email:</label><br>
-    <input type="email" id="email" name="email" required><br><br>
-    <!-- Phone Field -->
-    <label for="phone">Phone Number:</label><br>
-    <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
-    <small>Format: 10 digits only</small><br><br>
-  <input type="submit" value="Submit">
-</form> 
-  <div class="buttons">
-    <button onclick="getLocation('checkin')">Check In</button>
-    <button onclick="getLocation('checkout')">Check Out</button>
+    <form onsubmit="return false;">
+      <label for="client-email">Client Email</label>
+      <input type="email" id="client-email" name="clientEmail" required />
+
+      <label for="employee-email">Employee Email</label>
+      <input type="email" id="employee-email" name="employeeEmail" required />
+
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required placeholder="10 digits" />
+
+      <input type="submit" value="Submit">
+    </form>
+
+    <div class="buttons">
+      <button onclick="getLocation('checkin')">Check In</button>
+      <button onclick="getLocation('checkout')">Check Out</button>
+    </div>
+
+    <div id="demo"></div>
   </div>
-
-  <div id="demo"></div>
 
   <script>
     const output = document.getElementById("demo");
@@ -150,16 +201,17 @@
       .catch(err => console.error("Error sending to server:", err));
     }
   </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(function(reg) {
-        console.log('✅ Service Worker Registered');
-      })
-      .catch(function(err) {
-        console.error('❌ Service Worker registration failed:', err);
-      });
-  }
-</script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(function(reg) {
+          console.log('✅ Service Worker Registered');
+        })
+        .catch(function(err) {
+          console.error('❌ Service Worker registration failed:', err);
+        });
+    }
+  </script>
 </body>
 </html>
