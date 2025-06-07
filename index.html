@@ -46,13 +46,21 @@
     }
 
     input[type="email"],
-    input[type="tel"] {
+    input[type="tel"],
+    textarea {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 16px;
       outline: none;
+    }
+
+    textarea[readonly] {
+      background-color: #f5f5f5;
+      color: #333;
+      resize: none;
+      cursor: not-allowed;
     }
 
     input[type="submit"] {
@@ -123,31 +131,30 @@
   <div class="container">
     <h1>Site Visit</h1>
     <form onsubmit="return false;">
-        <label for="client-email">Client Email</label>
-        <input type="email" id="client-email" name="clientEmail" required />
-      
-        <label for="employee-email">Employee Email</label>
-        <input type="email" id="employee-email" name="employeeEmail" required />
-      
-        <label for="phone">Phone Number</label>
-        <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required placeholder="10 digits" />
-      
-        <label for="checkin-location">Check-In Location</label>
-        <input type="text" id="checkin-location" name="checkinLocation" readonly />
-      
-        <label for="checkout-location">Check-Out Location</label>
-        <input type="text" id="checkout-location" name="checkoutLocation" readonly />
-      
-        <input type="submit" value="Submit">
-      </form>
-      
-      <div class="buttons">
-        <button onclick="getLocation('checkin')">Check In</button>
-        <button onclick="getLocation('checkout')">Check Out</button>
-      </div>
-      
-      <div id="demo"></div>
-      
+      <label for="client-email">Client Email</label>
+      <input type="email" id="client-email" name="clientEmail" required />
+
+      <label for="employee-email">Employee Email</label>
+      <input type="email" id="employee-email" name="employeeEmail" required />
+
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required placeholder="10 digits" />
+
+      <label for="checkin-location">Check-In Location</label>
+      <textarea id="checkin-location" name="checkinLocation" rows="2" readonly></textarea>
+
+      <label for="checkout-location">Check-Out Location</label>
+      <textarea id="checkout-location" name="checkoutLocation" rows="2" readonly></textarea>
+
+      <input type="submit" value="Submit" />
+    </form>
+
+    <div class="buttons">
+      <button onclick="getLocation('checkin')">Check In</button>
+      <button onclick="getLocation('checkout')">Check Out</button>
+    </div>
+
+    <div id="demo"></div>
   </div>
 
   <script>
@@ -175,6 +182,13 @@
         .then(data => {
           const address = data.display_name;
           output.innerHTML += `<br>Address: ${address}`;
+
+          if (type === 'checkin') {
+            document.getElementById('checkin-location').value = address;
+          } else if (type === 'checkout') {
+            document.getElementById('checkout-location').value = address;
+          }
+
           sendToServer(lat, lon, address, type);
         })
         .catch(err => {
@@ -206,9 +220,8 @@
       })
       .catch(err => console.error("Error sending to server:", err));
     }
-  </script>
 
-  <script>
+    // Register Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(function(reg) {
@@ -219,32 +232,5 @@
         });
     }
   </script>
-  <script>
-    function success(position, type) {
-  const lat = position.coords.latitude;
-  const lon = position.coords.longitude;
-
-  output.innerHTML = `<strong>${type.toUpperCase()}</strong><br>Latitude: ${lat}<br>Longitude: ${lon}`;
-
-  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
-    .then(response => response.json())
-    .then(data => {
-      const address = data.display_name;
-      output.innerHTML += `<br>Address: ${address}`;
-
-      if (type === 'checkin') {
-        document.getElementById('checkin-location').value = address;
-      } else if (type === 'checkout') {
-        document.getElementById('checkout-location').value = address;
-      }
-
-      sendToServer(lat, lon, address, type);
-    })
-    .catch(err => {
-      console.error(err);
-      output.innerHTML += "<br>Could not fetch address.";
-    });
-}
-</script>
 </body>
 </html>
