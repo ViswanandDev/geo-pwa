@@ -208,9 +208,10 @@
         });
     }
 
-    function error() {
-      alert("Sorry, no position available.");
-    }
+    function error(err) {
+  console.error("Geolocation error:", err);
+  alert(`Geolocation failed: ${err.message} (Code: ${err.code})`);
+}
 
     function sendToServer(lat, lon, address, type) {
       fetch("https://your-server-endpoint.com/save-location", {
