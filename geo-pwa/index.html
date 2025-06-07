@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#007bff">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geolocation Check-In/Out</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      min-width: 120px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #demo {
+      width: 100%;
+      max-width: 500px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      word-wrap: break-word;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px 16px;
+      }
+
+      #demo {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Geolocation Check-In / Check-Out</h1>
+
+  <div class="buttons">
+    <button onclick="getLocation('checkin')">Check In</button>
+    <button onclick="getLocation('checkout')">Check Out</button>
+  </div>
+
+  <div id="demo"></div>
+
+  <script>
+    const output = document.getElementById("demo");
+
+    function getLocation(type) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => success(position, type),
+          error
+        );
+      } else {
+        output.innerHTML = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    function success(position, type) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      output.innerHTML = `<strong>${type.toUpperCase()}</strong><br>Latitude: ${lat}<br>Longitude: ${lon}`;
+
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+          const address = data.display_name;
+          output.innerHTML += `<br>Address: ${address}`;
+          sendToServer(lat, lon, address, type);
+        })
+        .catch(err => {
+          console.error(err);
+          output.innerHTML += "<br>Could not fetch address.";
+        });
+    }
+
+    function error() {
+      alert("Sorry, no position available.");
+    }
+
+    function sendToServer(lat, lon, address, type) {
+      fetch("https://your-server-endpoint.com/save-location", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lon,
+          address: address,
+          type: type
+        })
+      })
+      .then(res => res.text())
+      .then(data => {
+        console.log("Server response:", data);
+      })
+      .catch(err => console.error("Error sending to server:", err));
+    }
+  </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(function(reg) {
+        console.log('✅ Service Worker Registered');
+      })
+      .catch(function(err) {
+        console.error('❌ Service Worker registration failed:', err);
+      });
+  }
+</script>
+</body>
+</html>
