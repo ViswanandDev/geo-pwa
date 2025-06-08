@@ -14,7 +14,13 @@ self.addEventListener("install", function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       console.log("[Service Worker] Caching files");
-      return cache.addAll(urlsToCache);
+      return Promise.all(
+        urlsToCache.map(url =>
+          cache.add(url).catch(err => {
+            console.error(`[Service Worker] Failed to cache ${url}:`, err);
+          })
+        )
+      );
     })
   );
 });
@@ -22,7 +28,6 @@ self.addEventListener("install", function(event) {
 self.addEventListener("activate", function(event) {
   console.log("[Service Worker] Activated");
 
-  // Cleanup old caches if needed
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
       return Promise.all(
@@ -37,9 +42,8 @@ self.addEventListener("activate", function(event) {
   );
 });
 
+// Optional: keep fetch handler for cache falling back to network
 self.addEventListener("fetch", function(event) {
-  console.log("[Service Worker] Fetching:", event.request.url);
-
   event.respondWith(
     caches.match(event.request).then(function(response) {
       return response || fetch(event.request);
