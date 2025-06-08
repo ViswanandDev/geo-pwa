@@ -202,28 +202,30 @@
   });
 }
 
-    function sendToWebhook(checkInTimeISO, checkOutTimeISO, checkInAddress, checkOutAddress) {
-  const webhookURL = 'https://webhook.site/2a5fb4a7-e5b4-4642-8048-f5e10e0ae097'; // Replace with your own
+    async function sendToWebhook(checkInTimeISO, checkOutTimeISO, checkInAddress, checkOutAddress) {
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const webhookURL = 'https://webhook.site/2a5fb4a7-e5b4-4642-8048-f5e10e0ae097'; // Replace with your webhook URL
 
-  const data = {
-    title: "Site Visit",
-    start: checkInTimeISO,
-    end: checkOutTimeISO,
-    description: `Check-In Location:\n${checkInAddress}\n\nCheck-Out Location:\n${checkOutAddress}`
-  };
+    const data = {
+      title: "Site Visit",
+      start: checkInTimeISO,
+      end: checkOutTimeISO,
+      description: `Check-In Location:\n${checkInAddress}\n\nCheck-Out Location:\n${checkOutAddress}`
+    };
 
-  fetch(webhookURL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(response => {
-    console.log("✅ Data pushed to webhook.site:", response);
-  })
-  .catch(err => console.error("❌ Error pushing to webhook.site:", err));
+    try {
+      const res = await fetch(proxyUrl + encodeURIComponent(webhookURL), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const responseText = await res.text();
+      console.log("✅ Data pushed to webhook.site:", responseText);
+    } catch (err) {
+      console.error("❌ Error pushing to webhook.site:", err);
+    }
   }
 
     // PWA Install prompt logic
