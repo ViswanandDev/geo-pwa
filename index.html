@@ -148,63 +148,59 @@
     const installBtn = document.getElementById('installBtn');
     let deferredPrompt;
 
-    function handleCheck() {
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by this browser.");
-        return;
+    async function handleCheck() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by this browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async position => {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const now = new Date();
+    const displayTime = now.toLocaleString();
+    const isoTime = now.toISOString();
+
+    let address = 'Unknown Location'; // default fallback
+
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+
+      if (data && data.display_name) {
+        address = data.display_name;
+      } else {
+        console.warn("No display_name found in reverse geocode response:", data);
       }
-
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const now = new Date();
-          const displayTime = now.toLocaleString();
-          const isoTime = now.toISOString();
-
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
-            .then(res => res.json())
-            .then(data => {
-              const address = data.display_name;
-
-              if (!hasCheckedIn) {
-                document.getElementById("checkin-location").value = address;
-                document.getElementById("checkin-datetime").value = displayTime;
-                sendToServer(lat, lon, address, 'checkin', isoTime);
-                hasCheckedIn = true;
-                document.getElementById("check-btn").innerText = "Check Out";
-                output.innerHTML = `<strong>Checked In</strong><br>Location: ${address}<br>Time: ${displayTime}`;
-                sendToWebhook(
-                   checkinTimeISO,
-                   isoTime,
-                   document.getElementById("checkin-location").value,
-                   address
-                   );
-              } else {
-                document.getElementById("checkout-location").value = address;
-                document.getElementById("checkout-datetime").value = displayTime;
-                sendToServer(lat, lon, address, 'checkout', isoTime);
-                document.getElementById("check-btn").innerText = "Checked Out";
-                document.getElementById("check-btn").disabled = true;
-                output.innerHTML = `<strong>Checked Out</strong><br>Location: ${address}<br>Time: ${displayTime}`;
-                sendToWebhook(
-                   checkinTimeISO,
-                   isoTime,
-                   document.getElementById("checkin-location").value,
-                   address
-                   );
-              }
-            })
-            .catch(err => {
-              console.error(err);
-              alert("Could not fetch address.");
-            });
-        },
-        err => {
-          alert(`Geolocation error: ${err.message}`);
-        }
-      );
+    } catch (error) {
+      console.error("Address fetch failed:", error);
+      alert("Could not fetch address. Proceeding with default location.");
     }
+
+    if (!hasCheckedIn) {
+      // Check-in logic
+      document.getElementById("checkin-location").value = address;
+      document.getElementById("checkin-datetime").value = displayTime;
+      checkinTimeISO = isoTime;
+      hasCheckedIn = true;
+      document.getElementById("check-btn").innerText = "Check Out";
+      output.innerHTML = `<strong>Checked In</strong><br>Location: ${address}<br>Time: ${displayTime}`;
+
+      sendToWebhook(checkinTimeISO, isoTime, address, ""); // Placeholder for checkout address
+    } else {
+      // Check-out logic
+      document.getElementById("checkout-location").value = address;
+      document.getElementById("checkout-datetime").value = displayTime;
+      document.getElementById("check-btn").innerText = "Checked Out";
+      document.getElementById("check-btn").disabled = true;
+      output.innerHTML = `<strong>Checked Out</strong><br>Location: ${address}<br>Time: ${displayTime}`;
+
+      sendToWebhook(checkinTimeISO, isoTime, document.getElementById("checkin-location").value, address);
+    }
+  }, error => {
+    alert(`Geolocation error: ${error.message}`);
+  });
+}
 
     function sendToWebhook(checkInTimeISO, checkOutTimeISO, checkInAddress, checkOutAddress) {
   const webhookURL = 'https://webhook.site/2a5fb4a7-e5b4-4642-8048-f5e10e0ae097'; // Replace with your own
